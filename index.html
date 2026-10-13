@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f6b63">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Özel Asistanım</title>
+<style>
+:root{
+  --bg:#edf1f0; --surface:#f9fbfa; --ink:#12201f; --muted:#5b6b69; --line:#d3dcda;
+  --accent:#0f6b63; --accent-ink:#ffffff; --mine:#12201f; --mine-ink:#f3f7f6; --warn:#b4531a;
+  --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --f-body:system-ui,'Segoe UI',Roboto,sans-serif;
+  --f-mono:ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0e1514; --surface:#161f1e; --ink:#e6eeec; --muted:#93a5a2; --line:#2a3836;
+  --accent:#43b8aa; --accent-ink:#06201d; --mine:#e6eeec; --mine-ink:#0e1514; --warn:#e3965c; color-scheme:dark;}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.app{max-width:1060px;margin:0 auto;height:100%;display:grid;grid-template-columns:320px minmax(0,1fr);gap:16px;min-height:0}
+@media (max-width:760px){.app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}}
+h1,h2{font-family:var(--f-display);margin:0;text-wrap:balance}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;overflow:auto;min-height:0;max-height:100%}
+.panel>summary{list-style:none;cursor:pointer}
+.panel>summary::-webkit-details-marker{display:none}
+.brand{display:flex;align-items:center;gap:12px}
+.badge{width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:18px;flex:none}
+.brand h1{font-size:20px;line-height:1.15}
+.brand small{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.sec{font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip.add{border-style:dashed;color:var(--muted)}
+.chip:disabled{opacity:.5;cursor:not-allowed}
+.fields{display:flex;flex-direction:column;gap:14px;margin-top:4px}
+label{display:flex;flex-direction:column;gap:5px;font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+input,textarea,select{font:inherit;font-size:14px;letter-spacing:0;text-transform:none;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+textarea{resize:vertical;min-height:84px}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.hint{font-size:12px;color:var(--muted);margin:0}
+.hint a{color:var(--accent)}
+.btn{font:inherit;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:8px 12px;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.danger{color:var(--warn)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.conn{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:4px}
+.conn summary{cursor:pointer;font-weight:500}
+.conn .fields{margin-top:12px}
+.chat{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:10px;min-height:0;min-width:0}
+.chat-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.chat-head h2{font-size:16px}
+.log{flex:1;min-height:0;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:min(620px,88%);padding:10px 14px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.bot{background:var(--bg);border:1px solid var(--line);align-self:flex-start;border-top-left-radius:3px}
+.msg.me{background:var(--mine);color:var(--mine-ink);align-self:flex-end;border-top-right-radius:3px}
+.msg.err{border-color:var(--warn);color:var(--warn)}
+.starters{display:flex;flex-wrap:wrap;gap:8px}
+.starters button{font:inherit;font-size:13px;background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--ink);cursor:pointer}
+.starters button:hover{border-color:var(--accent)}
+form.send{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);align-items:flex-end}
+form.send textarea{min-height:44px;max-height:140px;resize:none}
+.dots::after{content:'…';animation:b 1s steps(3,end) infinite}
+@keyframes b{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){.dots::after{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <details class="panel" id="panel" open>
+    <summary>
+      <div class="brand">
+        <div class="badge" id="badge">A</div>
+        <div><h1 id="title">Asistanım</h1><small id="sub">Asistanlar</small></div>
+      </div>
+    </summary>
+
+    <div class="sec">Asistanlarım</div>
+    <div class="chips" id="list"></div>
+    <div class="chips" id="templates" hidden style="margin-top:8px"></div>
+
+    <div class="sec">Kimlik</div>
+    <div class="fields">
+      <label for="name">Adı<input id="name" maxlength="30"></label>
+      <label for="role">Görevi<input id="role" maxlength="80"></label>
+      <label for="tone">Konuşma tarzı
+        <select id="tone">
+          <option value="samimi ve sıcak">Samimi ve sıcak</option>
+          <option value="net, kısa ve profesyonel">Net ve profesyonel</option>
+          <option value="esprili ve enerjik">Esprili ve enerjik</option>
+          <option value="sakin, öğretici ve sabırlı">Sakin ve öğretici</option>
+        </select>
+      </label>
+      <label for="provider">Yapay zeka kaynağı<select id="provider"></select></label>
+      <label for="model">Model
+        <input id="model" list="models" autocomplete="off" placeholder="Listeden seç veya yaz">
+        <datalist id="models"></datalist>
+      </label>
+      <button class="btn" id="refresh" type="button">Model listesini yenile</button>
+      <label for="rules">Kurallar ve bilgi<textarea id="rules" maxlength="1500"></textarea></label>
+      <div class="row">
+        <button class="btn primary" id="save" type="button">Kaydet</button>
+        <button class="btn" id="clear" type="button">Sohbeti temizle</button>
+        <button class="btn danger" id="del" type="button">Asistanı sil</button>
+      </div>
+    </div>
+
+    <div class="sec">Bağlantı</div>
+    <details class="conn" id="conn">
+      <summary>Ücretsiz anahtarlar</summary>
+      <div class="fields">
+        <p class="hint">Hepsi ücretsiz hesapla alınır. En az birini eklemen yeterli. Anahtarlar sadece bu cihazda saklanır ve yalnızca ilgili sağlayıcıya gönderilir.</p>
+        <label for="k-groq">Groq anahtarı<input id="k-groq" type="password" autocomplete="off" placeholder="gsk_..."></label>
+        <p class="hint"><a href="https://console.groq.com/keys" target="_blank" rel="noopener">Groq'tan ücretsiz anahtar al</a></p>
+        <label for="k-gemini">Google Gemini anahtarı<input id="k-gemini" type="password" autocomplete="off" placeholder="AIza..."></label>
+        <p class="hint"><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio'dan ücretsiz anahtar al</a></p>
+        <label for="k-openrouter">OpenRouter anahtarı<input id="k-openrouter" type="password" autocomplete="off" placeholder="sk-or-..."></label>
+        <p class="hint"><a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter'dan ücretsiz anahtar al</a> ve ":free" ile biten modelleri seç.</p>
+        <button class="btn primary" id="saveKeys" type="button">Anahtarları kaydet</button>
+        <p class="hint">Ücretsiz kotalar ve model adları zamanla değişir. Biri çalışmazsa model listesini yenile ya da başka bir kaynağı dene.</p>
+      </div>
+    </details>
+  </details>
+
+  <section class="chat" aria-label="Sohbet">
+    <div class="chat-head"><h2 id="chatTitle">Sohbet</h2><span class="hint" id="status"></span></div>
+    <div class="log" id="log" aria-live="polite"></div>
+    <form class="send" id="form">
+      <textarea id="input" rows="1" placeholder="Bir mesaj yaz…" aria-label="Mesaj"></textarea>
+      <button class="btn primary" id="go" type="submit">Gönder</button>
+      <button class="btn" id="stop" type="button" hidden>Durdur</button>
+    </form>
+  </section>
+</div>
+
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var LS='ozel-asistan-app-v1';
+  var PROVIDERS={
+    groq:{label:'Groq (hızlı, ücretsiz)',base:'https://api.groq.com/openai/v1',def:'llama-3.3-70b-versatile'},
+    gemini:{label:'Google Gemini (ücretsiz)',base:'https://generativelanguage.googleapis.com/v1beta/openai',def:'gemini-2.5-flash'},
+    openrouter:{label:'OpenRouter (ücretsiz modeller)',base:'https://openrouter.ai/api/v1',def:'meta-llama/llama-3.3-70b-instruct:free'}
+  };
+  var RULES='Her zaman Türkçe yanıt ver. Cevapları kısa tut, gerekirse madde işareti kullan. Bilmediğin bir şeyi uydurma, bilmediğini söyle.';
+  var TEMPLATES=[
+    {label:'Genel yardımcı',name:'Nova',role:'Kişisel çalışma ve fikir arkadaşım',tone:'samimi ve sıcak',rules:RULES},
+    {label:'Yazar',name:'Kalem',role:'Metin yazma ve düzenleme editörüm',tone:'net, kısa ve profesyonel',rules:'Türkçe yaz. Taslak istendiğinde önce kısa bir versiyon ver, sonra geliştirmeyi öner. Yazım ve noktalama hatalarını düzelt.'},
+    {label:'Kod yardımcısı',name:'Kodcu',role:'Yazılım ve hata ayıklama yardımcım',tone:'net, kısa ve profesyonel',rules:'Türkçe açıkla, kodu kod bloğunda ver. Önce sorunun nedenini söyle, sonra çözümü ver. Emin olmadığın yerde varsayımını belirt.'},
+    {label:'Öğretmen',name:'Hoca',role:'Her konuyu basitçe anlatan özel öğretmenim',tone:'sakin, öğretici ve sabırlı',rules:'Türkçe anlat. Önce basit bir örnek ver, sonra ayrıntıya geç. Sonunda tek bir kontrol sorusu sor.'},
+    {label:'Çevirmen',name:'Çeviri',role:'Türkçe, İngilizce ve diğer diller arasında çevirmen',tone:'net, kısa ve profesyonel',rules:'Verilen metni istenen dile çevir. Sadece çeviriyi yaz, açıklama ekleme. Dil belirtilmediyse Türkçe ile İngilizce arasında çevir.'}
+  ];
+
+  var S={active:null,list:[],keys:{groq:'',gemini:'',openrouter:''}};
+  var busy=false, ctrl=null, modelCache={};
+
+  function nid(){return 'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+  function cur(){return S.list.filter(function(a){return a.id===S.active})[0]}
+  function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+  function load(){try{var s=JSON.parse(localStorage.getItem(LS)||'null');if(s&&Array.isArray(s.list)&&s.list.length){S.list=s.list;S.active=s.active;S.keys=Object.assign(S.keys,s.keys||{});}}catch(e){}}
+  function firstProvider(){for(var k in PROVIDERS){if(S.keys[k])return k;}return 'groq';}
+  function fromTemplate(t){var p=firstProvider();return {id:nid(),created:Date.now(),history:[],name:t.name,role:t.role,tone:t.tone,rules:t.rules,provider:p,model:PROVIDERS[p].def};}
+
+  /* ---------- görünüm ---------- */
+  function fill(){var a=cur();$('name').value=a.name;$('role').value=a.role;$('tone').value=a.tone;$('provider').value=a.provider;$('model').value=a.model;$('rules').value=a.rules;}
+  function brand(){var a=cur();$('title').textContent=a.name;$('badge').textContent=(a.name.trim().charAt(0)||'A').toUpperCase();$('chatTitle').textContent=a.name+' ile sohbet';$('sub').textContent=S.list.length+' asistan';}
+  function renderList(){
+    var box=$('list');box.textContent='';
+    S.list.forEach(function(a){
+      var b=document.createElement('button');b.type='button';b.className='chip';b.textContent=a.name;b.disabled=busy;
+      b.setAttribute('aria-pressed',a.id===S.active?'true':'false');
+      b.onclick=function(){if(busy||a.id===S.active)return;S.active=a.id;save();renderAll();};
+      box.appendChild(b);
+    });
+    var ad=document.createElement('button');ad.type='button';ad.className='chip add';ad.textContent='+ Yeni';ad.disabled=busy;
+    ad.onclick=function(){$('templates').hidden=!$('templates').hidden;};box.appendChild(ad);
+    var tb=$('templates');tb.textContent='';
+    TEMPLATES.forEach(function(t){
+      var b=document.createElement('button');b.type='button';b.className='chip';b.textContent=t.label;
+      b.onclick=function(){var a=fromTemplate(t);S.list.push(a);S.active=a.id;$('templates').hidden=true;save();renderAll();};
+      tb.appendChild(b);
+    });
+    $('del').disabled=S.list.length<2||busy;
+  }
+  function add(kind,text){var d=document.createElement('div');d.className='msg '+kind;d.textContent=text;$('log').appendChild(d);$('log').scrollTop=$('log').scrollHeight;return d;}
+  function hasKey(a){return !!S.keys[a.provider];}
+  function renderChat(){
+    var a=cur();$('log').textContent='';
+    if(!a.history.length){
+      add('bot','Merhaba, ben '+a.name+'. '+a.role+'. Nasıl yardımcı olabilirim?');
+      if(!hasKey(a)){
+        add('bot err','Başlamak için soldaki "Bağlantı" bölümünden ücretsiz bir anahtar ekle.');
+        $('conn').open=true;
+      }else{
+        var st=document.createElement('div');st.className='starters';
+        ['Kendini tanıt','Bugün için bir plan yap','Bir fikrimi geliştir'].forEach(function(t){
+          var b=document.createElement('button');b.type='button';b.textContent=t;
+          b.onclick=function(){$('input').value=t;$('form').requestSubmit();};st.appendChild(b);
+        });
+        $('log').appendChild(st);
+      }
+    }else a.history.forEach(function(m){add(m.role==='user'?'me':'bot',m.content)});
+  }
+  function renderAll(){renderList();fill();brand();renderChat();loadModels(cur().provider,false);}
+  function setBusy(b){busy=b;$('go').hidden=b;$('stop').hidden=!b;$('input').disabled=b;$('status').textContent=b?'yazıyor':'';renderList();}
+
+  /* ---------- model listesi ---------- */
+  function fillModels(p){
+    var dl=$('models');dl.textContent='';
+    (modelCache[p]||[]).forEach(function(id){var o=document.createElement('option');o.value=id;dl.appendChild(o);});
+  }
+  async function loadModels(p,force){
+    if(modelCache[p]&&!force){fillModels(p);return;}
+    var key=S.keys[p];
+    if(p!=='openrouter'&&!key){modelCache[p]=[PROVIDERS[p].def];fillModels(p);return;}
+    try{
+      var h={};if(key)h.Authorization='Bearer '+key;
+      var r=await fetch(PROVIDERS[p].base+'/models',{headers:h});
+      if(!r.ok)throw new Error(r.status);
+      var j=await r.json(),ids=[];
+      (j.data||[]).forEach(function(m){
+        var id=String(m.id||'');
+        if(p==='openrouter'){var pr=m.pricing||{};if(String(pr.prompt)==='0'&&String(pr.completion)==='0')ids.push(id);}
+        else if(p==='gemini'){id=id.replace(/^models\//,'');if(/gemini|gemma/.test(id)&&!/embed|aqa|imagen|veo|tts|image/.test(id))ids.push(id);}
+        else{if(!/whisper|guard|tts|playai|orpheus|embed/.test(id))ids.push(id);}
+      });
+      ids.sort();
+      modelCache[p]=ids.length?ids:[PROVIDERS[p].def];
+      if(force)$('status').textContent=ids.length+' model bulundu';
+    }catch(e){
+      modelCache[p]=[PROVIDERS[p].def];
+      if(force)$('status').textContent='Liste alınamadı, adı elle yazabilirsin';
+    }
+    fillModels(p);
+  }
+
+  /* ---------- eylemler ---------- */
+  Object.keys(PROVIDERS).forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=PROVIDERS[k].label;$('provider').appendChild(o);});
+  $('provider').onchange=function(){var p=$('provider').value;$('model').value=PROVIDERS[p].def;loadModels(p,false);};
+  $('refresh').onclick=function(){loadModels($('provider').value,true);};
+  $('save').onclick=function(){
+    var a=cur();
+    a.name=$('name').value.trim()||'Asistan';a.role=$('role').value.trim()||'Genel yardımcı';a.tone=$('tone').value;
+    a.provider=$('provider').value;a.model=$('model').value.trim()||PROVIDERS[a.provider].def;a.rules=$('rules').value.trim();
+    save();renderList();brand();$('status').textContent='Kaydedildi';
+    if(window.matchMedia('(max-width:760px)').matches)$('panel').open=false;
+  };
+  $('saveKeys').onclick=function(){
+    Object.keys(PROVIDERS).forEach(function(k){S.keys[k]=$('k-'+k).value.trim();delete modelCache[k];});
+    save();$('status').textContent='Anahtarlar kaydedildi';renderChat();loadModels($('provider').value,true);
+  };
+  $('clear').onclick=function(){var a=cur();a.history=[];save();renderChat();};
+  var armed=false;
+  $('del').onclick=function(){
+    if(S.list.length<2)return;
+    if(!armed){armed=true;$('del').textContent='Silmek için tekrar bas';setTimeout(function(){armed=false;$('del').textContent='Asistanı sil';},3000);return;}
+    armed=false;$('del').textContent='Asistanı sil';
+    var id=S.active;S.list=S.list.filter(function(a){return a.id!==id});S.active=S.list[0].id;save();renderAll();
+  };
+  $('stop').onclick=function(){if(ctrl)ctrl.abort();};
+  $('input').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('form').requestSubmit();}});
+
+  function instructions(a){
+    return 'Sen "'+a.name+'" adlı özel bir yapay zeka asistanısın. Görevin: '+a.role+'. Konuşma tarzın: '+a.tone+'. Aşağıdaki kurallara uy:\n'+a.rules+'\n\nKullanıcıya her zaman '+a.name+' olarak cevap ver ve rolünden çıkma.';
+  }
+  function errText(status,body){
+    if(status===401||status===403)return 'Anahtar kabul edilmedi. Bağlantı bölümünde doğru anahtarı girdiğinden emin ol.';
+    if(status===404)return 'Bu model bulunamadı. Model listesini yenileyip başka bir model seç.';
+    if(status===429)return 'Ücretsiz kota doldu ya da çok hızlı gidildi. Biraz bekle veya başka bir kaynak seç.';
+    var m='';try{var j=JSON.parse(body);m=(j.error&&(j.error.message||j.error))||j.message||'';}catch(e){}
+    return 'Cevap alınamadı ('+status+'). '+(typeof m==='string'?m.slice(0,160):'');
+  }
+
+  $('form').addEventListener('submit',async function(e){
+    e.preventDefault();
+    if(busy)return;
+    var a=cur(),text=$('input').value.trim();if(!text)return;
+    if(!hasKey(a)){add('bot err','Önce Bağlantı bölümünden '+PROVIDERS[a.provider].label+' için anahtar ekle.');$('conn').open=true;return;}
+    $('input').value='';
+    a.history.push({role:'user',content:text});save();renderChat();
+    var msgs=[{role:'system',content:instructions(a)}].concat(a.history.slice(-14).map(function(m){return {role:m.role,content:m.content}}));
+    var bubble=add('bot','');bubble.classList.add('dots');setBusy(true);
+    ctrl=new AbortController();
+    var full='';
+    try{
+      var r=await fetch(PROVIDERS[a.provider].base+'/chat/completions',{
+        method:'POST',signal:ctrl.signal,
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+S.keys[a.provider]},
+        body:JSON.stringify({model:a.model,messages:msgs,stream:true})
+      });
+      if(!r.ok){var body=await r.text();throw {http:r.status,body:body};}
+      var rd=r.body.getReader(),dec=new TextDecoder(),buf='';
+      while(true){
+        var c=await rd.read();if(c.done)break;
+        buf+=dec.decode(c.value,{stream:true});
+        var lines=buf.split('\n');buf=lines.pop();
+        for(var i=0;i<lines.length;i++){
+          var ln=lines[i].trim();
+          if(ln.indexOf('data:')!==0)continue;
+          var d=ln.slice(5).trim();if(d==='[DONE]')continue;
+          try{var j=JSON.parse(d);var t=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;
+            if(t){full+=t;bubble.classList.remove('dots');bubble.textContent=full;$('log').scrollTop=$('log').scrollHeight;}}catch(x){}
+        }
+      }
+      bubble.classList.remove('dots');
+      if(!full.trim())throw {http:0,body:''};
+      a.history.push({role:'assistant',content:full});save();
+    }catch(err){
+      bubble.classList.remove('dots');
+      if(full.trim()){bubble.textContent=full;a.history.push({role:'assistant',content:full});save();}
+      else{
+        bubble.classList.add('err');
+        if(err&&err.name==='AbortError')bubble.textContent='Durduruldu.';
+        else if(err&&typeof err.http==='number'&&err.http>0)bubble.textContent=errText(err.http,err.body);
+        else bubble.textContent='Bağlantı kurulamadı. İnternetini kontrol et ya da başka bir kaynak dene.';
+        a.history.pop();save();
+      }
+    }finally{ctrl=null;setBusy(false);$('input').focus();}
+  });
+
+  /* ---------- başlangıç ---------- */
+  load();
+  if(!S.list.length){S.list=[fromTemplate(TEMPLATES[0])];}
+  if(!cur())S.active=S.list[0].id;
+  Object.keys(PROVIDERS).forEach(function(k){$('k-'+k).value=S.keys[k]||'';});
+  if(window.matchMedia('(max-width:760px)').matches)$('panel').open=false;
+  renderAll();
+})();
+</script>
+</body>
+</html>
